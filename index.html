@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>녹 면적 분석기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .info-box {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .upload-section {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #2980b9;
+            background: #ecf0f1;
+        }
+
+        .controls-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .controls-section h3 {
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .control-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .control-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .control-unit {
+            font-size: 12px;
+            color: #95a5a6;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .reset-button {
+            width: 100%;
+            padding: 10px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+        }
+
+        .reset-button:hover {
+            background: #7f8c8d;
+            transform: translateY(-1px);
+        }
+
+        .preview-section {
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .canvas-wrapper {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #bdc3c7;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .canvas-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-card.primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-unit {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .details-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .details-card h3 {
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .details-table {
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .details-table tr {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .details-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .details-table td {
+            padding: 8px 0;
+        }
+
+        .details-table td:first-child {
+            color: #7f8c8d;
+            width: 60%;
+        }
+
+        .details-table td:last-child {
+            text-align: right;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        button.download {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button.download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button.download:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #ecf0f1;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ecf0f1;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 녹 면적 분석기</h1>
+        
+        <div class="info-box">
+            <strong>사용 안내:</strong> 10cm × 10cm 사진을 업로드하면 자동으로 녹슨 면적을 계산합니다. 민감도를 조절하여 정확도를 높일 수 있습니다.
+        </div>
+
+        <div class="upload-section">
+            <label for="imageInput">📸 이미지 업로드 (10cm × 10cm)</label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <div class="controls-section" id="controlsSection">
+            <h3>⚙️ 녹 감지 민감도 조절</h3>
+            <div class="control-group">
+                <div class="control-item">
+                    <span class="control-label">색상 범위 (Hue) 최소값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="hueMin" min="0" max="360" step="0.1" value="15" class="control-input">
+                        <span class="control-unit">°</span>
+                    </div>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">색상 범위 (Hue) 최대값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="hueMax" min="0" max="360" step="0.1" value="45" class="control-input">
+                        <span class="control-unit">°</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-item">
+                    <span class="control-label">포화도 (Saturation) 최소값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="satMin" min="0" max="1" step="0.01" value="0.3" class="control-input">
+                    </div>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">포화도 (Saturation) 최대값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="satMax" min="0" max="1" step="0.01" value="1" class="control-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-item">
+                    <span class="control-label">밝기 (Lightness) 최소값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="lightMin" min="0" max="1" step="0.01" value="0.15" class="control-input">
+                    </div>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">밝기 (Lightness) 최대값</span>
+                    <div class="control-inputs">
+                        <input type="number" id="lightMax" min="0" max="1" step="0.01" value="0.65" class="control-input">
+                    </div>
+                </div>
+            </div>
+
+            <button class="reset-button" id="resetButton">🔄 기본값으로 초기화</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>분석 중...</p>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="canvas-wrapper">
+                <canvas id="originalCanvas"></canvas>
+                <div class="canvas-label">원본 이미지</div>
+            </div>
+
+            <div class="canvas-wrapper" id="maskWrapper" style="display: none;">
+                <canvas id="maskCanvas"></canvas>
+                <div class="canvas-label">녹 감지 결과 (주황색 = 녹슨 부분)</div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-label">녹슨 면적</div>
+                    <div class="stat-value" id="rustArea">0</div>
+                    <div class="stat-unit">cm²</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">녹슨 비율</div>
+                    <div class="stat-value" id="rustPercent">0</div>
+                    <div class="stat-unit">%</div>
+                </div>
+            </div>
+
+            <div class="details-card">
+                <h3>📊 세부 정보</h3>
+                <table class="details-table">
+                    <tr>
+                        <td>전체 면적</td>
+                        <td><span id="totalArea">100</span> cm²</td>
+                    </tr>
+                    <tr>
+                        <td>정상 면적</td>
+                        <td><span id="healthyArea">0</span> cm²</td>
+                    </tr>
+                    <tr>
+                        <td>이미지 크기</td>
+                        <td><span id="imageSize">-</span> px</td>
+                    </tr>
+                </table>
+            </div>
+
+            <button id="downloadBtn" class="download">📥 분석 결과 이미지 다운로드</button>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 Rust Analyzer | 부산 동일중앙초등학교</p>
+        </div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const maskCanvas = document.getElementById('maskCanvas');
+        const previewSection = document.getElementById('previewSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const loading = document.getElementById('loading');
+        const maskWrapper = document.getElementById('maskWrapper');
+        const controlsSection = document.getElementById('controlsSection');
+        
+        const origCtx = originalCanvas.getContext('2d');
+        const maskCtx = maskCanvas.getContext('2d');
+
+        // 기본값
+        const defaults = {
+            hueMin: 15,
+            hueMax: 45,
+            satMin: 0.3,
+            satMax: 1,
+            lightMin: 0.15,
+            lightMax: 0.65
+        };
+
+        let currentImageData = null;
+
+        // 민감도 입력 필드
+        const hueMinInput = document.getElementById('hueMin');
+        const hueMaxInput = document.getElementById('hueMax');
+        const satMinInput = document.getElementById('satMin');
+        const satMaxInput = document.getElementById('satMax');
+        const lightMinInput = document.getElementById('lightMin');
+        const lightMaxInput = document.getElementById('lightMax');
+        const resetButton = document.getElementById('resetButton');
+
+        // 민감도 값 변경 시 실시간 재분석
+        const sensitivityInputs = [hueMinInput, hueMaxInput, satMinInput, satMaxInput, lightMinInput, lightMaxInput];
+        sensitivityInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (currentImageData) {
+                    analyzeRust();
+                }
+            });
+        });
+
+        // 기본값 초기화
+        resetButton.addEventListener('click', () => {
+            hueMinInput.value = defaults.hueMin;
+            hueMaxInput.value = defaults.hueMax;
+            satMinInput.value = defaults.satMin;
+            satMaxInput.value = defaults.satMax;
+            lightMinInput.value = defaults.lightMin;
+            lightMaxInput.value = defaults.lightMax;
+            
+            if (currentImageData) {
+                analyzeRust();
+            }
+        });
+
+        function analyzeRust() {
+            if (!currentImageData) return;
+
+            const data = currentImageData;
+            const hueMin = parseFloat(hueMinInput.value);
+            const hueMax = parseFloat(hueMaxInput.value);
+            const satMin = parseFloat(satMinInput.value);
+            const satMax = parseFloat(satMaxInput.value);
+            const lightMin = parseFloat(lightMinInput.value);
+            const lightMax = parseFloat(lightMaxInput.value);
+
+            const rustPixels = new Uint8ClampedArray(originalCanvas.width * originalCanvas.height * 4);
+            let rustCount = 0;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // 회색/하얀색 제외
+                const grayness = Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r);
+                if (grayness < 30) {
+                    rustPixels[i] = 0; rustPixels[i + 1] = 0; rustPixels[i + 2] = 0; rustPixels[i + 3] = 0;
+                    continue;
+                }
+
+                // RGB -> HSL 변환
+                const rn = r / 255, gn = g / 255, bn = b / 255;
+                const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+                const l = (max + min) / 2;
+                let h = 0, s = 0;
+
+                if (max !== min) {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case rn: h = ((gn - bn) / d + (gn < bn ? 6 : 0)) / 6; break;
+                        case gn: h = ((bn - rn) / d + 2) / 6; break;
+                        case bn: h = ((rn - gn) / d + 4) / 6; break;
+                    }
+                }
+
+                // 녹 감지 (민감도 입력값 기반)
+                const hue = h * 360;
+                if ((hue >= hueMin && hue <= hueMax) && s >= satMin && s <= satMax && l >= lightMin && l <= lightMax) {
+                    rustPixels[i] = 230; rustPixels[i + 1] = 120; rustPixels[i + 2] = 20; rustPixels[i + 3] = 220;
+                    rustCount++;
+                } else {
+                    rustPixels[i] = 0; rustPixels[i + 1] = 0; rustPixels[i + 2] = 0; rustPixels[i + 3] = 0;
+                }
+            }
+
+            const rustImageData = new ImageData(rustPixels, originalCanvas.width, originalCanvas.height);
+            maskCtx.putImageData(rustImageData, 0, 0);
+
+            // 결과 계산
+            const totalPixels = originalCanvas.width * originalCanvas.height;
+            const totalAreaCm2 = 100;
+            const pixelPerCm2 = totalPixels / 100;
+            const rustAreaCm2 = Math.round((rustCount / pixelPerCm2) * 100) / 100;
+            const rustPercent = Math.round((rustCount / totalPixels) * 1000) / 10;
+            const healthyAreaCm2 = Math.round((totalAreaCm2 - rustAreaCm2) * 100) / 100;
+
+            document.getElementById('rustArea').textContent = rustAreaCm2;
+            document.getElementById('rustPercent').textContent = rustPercent;
+            document.getElementById('totalArea').textContent = totalAreaCm2;
+            document.getElementById('healthyArea').textContent = healthyAreaCm2;
+        }
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            loading.style.display = 'block';
+            previewSection.style.display = 'none';
+            resultsSection.style.display = 'none';
+            controlsSection.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalCanvas.width = img.width;
+                    originalCanvas.height = img.height;
+                    maskCanvas.width = img.width;
+                    maskCanvas.height = img.height;
+
+                    origCtx.drawImage(img, 0, 0);
+                    const imageData = origCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+                    currentImageData = imageData.data;
+
+                    analyzeRust();
+
+                    document.getElementById('imageSize').textContent = originalCanvas.width + ' × ' + originalCanvas.height;
+
+                    maskWrapper.style.display = 'block';
+                    previewSection.style.display = 'block';
+                    resultsSection.style.display = 'block';
+                    controlsSection.style.display = 'block';
+                    loading.style.display = 'none';
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = maskCanvas.toDataURL('image/png');
+            link.download = 'rust-analysis-' + new Date().getTime() + '.png';
+            link.click();
+        });
+    </script>
+</body>
+</html>
